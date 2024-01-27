@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  nodejs-server:
+    image: node:20
+    container_name: nodejs-server-container
+    working_dir: /app
+    volumes:
+      - ./url_shortener_auth:/app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+    command: >
+      bash -c "npm install && npm start"
+
+  postgres-db-service:
+    image: postgres:latest
+    container_name: postgres-db-service
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: url_shortener_db_service
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin_password
+
+  postgres-db-auth:
+    image: postgres:latest
+    container_name: postgres-db-auth
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: url_shortener_db_auth
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin_password
