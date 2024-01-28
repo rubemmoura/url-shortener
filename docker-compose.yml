@@ -1,14 +1,27 @@
 version: '3'
 
 services:
-  nodejs-server:
+  url-shortener-auth:
     image: node:20
-    container_name: nodejs-server-container
+    container_name: url-shortener-auth
     working_dir: /app
     volumes:
       - ./url_shortener_auth:/app
     ports:
       - "3000:3000"
+    environment:
+      NODE_ENV: development
+    command: >
+      bash -c "npm install && npm start"
+
+  url-shortener-service:
+    image: node:20
+    container_name: url-shortener-service
+    working_dir: /app
+    volumes:
+      - ./url_shortener_service:/app
+    ports:
+      - "3001:3001"
     environment:
       NODE_ENV: development
     command: >
