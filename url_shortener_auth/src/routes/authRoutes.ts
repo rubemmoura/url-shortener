@@ -1,31 +1,14 @@
 import express, { Request, Response } from 'express';
-import UserRepository from "../data/repositories/userRepository"
-import Knex from 'knex';
-type Knex = typeof Knex
-
-function createKnexInstance(): any {
-    const knexConfig = {
-        client: 'pg',
-        connection: {
-            host: 'host.docker.internal',
-            user: 'admin',
-            password: 'admin_password',
-            database: 'url_shortener_db',
-        },
-    };
-
-    return Knex(knexConfig);
-}
-
-const knexInstance = createKnexInstance();
+import UserRepository from "../repositories/userRepository"
+import KnexSingleton from '../database/knexSingleton';
 
 const router = express.Router();
-const userRepository = new UserRepository(knexInstance);
+const userRepository = new UserRepository(KnexSingleton);
 
 // Rota para registrar um novo usuário
 router.post('/register', async (req: Request, res: Response) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, role } = req.body;
 
         // Verifica se o usuário já existe
         const existingUser = await userRepository.getUserByEmail(email);
@@ -34,7 +17,7 @@ router.post('/register', async (req: Request, res: Response) => {
         }
 
         // Cria um novo usuário
-        const newUser = await userRepository.createUser({ email, password });
+        const newUser = await userRepository.createUser({ email, password, role });
         return res.status(201).json(newUser);
     } catch (error) {
         console.error('Erro ao registrar usuário:', error);

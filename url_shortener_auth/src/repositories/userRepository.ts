@@ -1,20 +1,16 @@
-import Knex from 'knex';
-type Knex = typeof Knex
 
-interface User {
-    id: number;
-    email: string;
-    password: string;
-}
+
+import KnexSingleton from '../database/knexSingleton';
+import { User } from '../interfaces/user';
 
 class UserRepository {
-    private knex: Knex;
+    private knex: typeof KnexSingleton;
 
-    constructor(knex: Knex) {
+    constructor(knex: typeof KnexSingleton) {
         this.knex = knex;
     }
 
-    async createUser(user: Partial<User>): Promise<User> {
+    async createUser(user: User): Promise<User> {
         const [createdUser] = await this.knex('user').insert(user).returning('*');
         return createdUser;
     }
