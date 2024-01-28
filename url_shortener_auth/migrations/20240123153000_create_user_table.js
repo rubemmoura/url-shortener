@@ -15,11 +15,18 @@ exports.up = function (knex) {
       table.integer('role_id').unsigned().notNullable();
       table.foreign('role_id').references('id').inTable('role');
     });
+  }).then(() => {
+    return knex.schema.createTable('blackList', function (table) {
+      table.increments('id').primary();
+      table.string('token', 255).notNullable();
+    });
   });
 };
 
 exports.down = function (knex) {
   return knex.schema.dropTableIfExists('user').then(() => {
     return knex.schema.dropTableIfExists('role');
+  }).then(() => {
+    return knex.schema.dropTableIfExists('blackList');
   });
 };
