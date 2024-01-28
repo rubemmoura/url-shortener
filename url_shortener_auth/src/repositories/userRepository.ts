@@ -1,5 +1,4 @@
-
-
+import bcrypt from 'bcrypt';
 import KnexSingleton from '../database/knexSingleton';
 import { User } from '../interfaces/user';
 
@@ -11,7 +10,13 @@ class UserRepository {
     }
 
     async createUser(user: User): Promise<User> {
-        const [createdUser] = await this.knex('user').insert(user).returning('*');
+        const hashedPassword = await bcrypt.hash(user.password, 10); // 10 é o custo do hash, quanto maior, mais seguro, mas mais lento
+        const userToInsert: User = {
+            ...user,
+            password: hashedPassword
+        };
+
+        const [createdUser] = await this.knex('user').insert(userToInsert).returning('*');
         return createdUser;
     }
 

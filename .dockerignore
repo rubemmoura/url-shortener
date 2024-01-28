@@ -1,0 +1,8 @@
+**/node_modules/
+**/dist
+.git
+npm-debug.log
+.coverage
+.coverage.*
+.DS_Store
+./url_shortener_auth/node_modules/
