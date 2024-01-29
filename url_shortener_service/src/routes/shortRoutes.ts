@@ -71,7 +71,7 @@ router.post('/shorten', async (req: Request, res: Response) => {
 
         return res.status(201).json({ message: 'Short URL created', shortUrl, hash });
     } catch (error) {
-        console.error('Erro ao fazer logout:', error);
+        console.error('Error:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
