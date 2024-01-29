@@ -13,6 +13,7 @@ exports.up = function (knex) {
       table.string('device', 255).notNullable();
       table.string('operationalSystem', 255).notNullable();
       table.string('country', 255).notNullable();
+      table.string('browser', 255).notNullable();
       table.string('city', 255).notNullable();
       table.timestamp('createdAt').defaultTo(knex.fn.now());
       table.foreign('urlMapper_id').references('id').inTable('urlMapper');

@@ -1,10 +1,10 @@
 import express, { Request, Response } from 'express';
-import axios from 'axios';
 import crypto from 'crypto';
-import useragent from 'useragent';
 import KnexSingleton from '../database/knexSingleton';
 import UrlMapperRepository from '../repositories/urlMapperRepository';
 import RequestRepository from '../repositories/requestRepository';
+import { UserAgentHelper } from '../helpers/userAgentHelper';
+import { AuthHelper } from '../helpers/authHelper';
 
 const router = express.Router();
 const urlMapperRepository = new UrlMapperRepository(KnexSingleton);
@@ -12,26 +12,24 @@ const requestRepository = new RequestRepository(KnexSingleton);
 const jwtSecret = process.env.JWT_SECRET || '';
 
 router.get('/:hash', async (req: Request, res: Response) => {
-    const hash: string = req.params.hash;
-    const urlMapperItem = await urlMapperRepository.getUrlMapperItemByHash(hash)
+    try {
+        const hash: string = req.params.hash;
+        const urlMapperItem = await urlMapperRepository.getUrlMapperItemByHash(hash)
 
-    if (urlMapperItem) {
-        const longUrl = urlMapperItem.longUrl.startsWith('http://') || urlMapperItem.longUrl.startsWith('https://') ? urlMapperItem.longUrl : `http://${urlMapperItem.longUrl}`;
+        if (urlMapperItem) {
+            const longUrl = urlMapperItem.longUrl.startsWith('http://') || urlMapperItem.longUrl.startsWith('https://') ? urlMapperItem.longUrl : `http://${urlMapperItem.longUrl}`;
+            const { device, os, browser } = UserAgentHelper.parseUserAgent(req);
 
-        // Obter informações do cabeçalho User-Agent
-        const userAgent = req.headers['user-agent'];
-        const agent = useragent.parse(userAgent);
+            await urlMapperRepository.incrementCounterUrlMapperItemByHash(hash)
+            await requestRepository.createRequestItem({ city: "cidade", country: "canada", device, operationalSystem: os, urlMapper_id: urlMapperItem.id, browser })
 
-        console.log('Dispositivo:', agent.device.family);
-        console.log('Sistema Operacional:', agent.os.family);
-        console.log('Navegador:', agent.family);
-
-        await urlMapperRepository.incrementCounterUrlMapperItemByHash(hash)
-        await requestRepository.createRequestItem({ city: "cidade", country: "canada", device: agent.device.family, operationalSystem: agent.os.family, urlMapper_id: urlMapperItem.id })
-
-        return res.redirect(301, longUrl);
-    } else {
-        return res.status(404).send('URL not found');
+            return res.redirect(301, longUrl);
+        } else {
+            return res.status(404).send('URL not found');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 });
 
@@ -46,21 +44,16 @@ router.post('/shorten', async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'Unauthorized: Token is required' });
         }
 
-        const verifyTokenAuth = 'http://url-shortener-auth:3000/auth/verify-token';
-        try {
-            const verifyTokenResponse = await axios.post(verifyTokenAuth, { token });
-
-            if (verifyTokenResponse.status !== 200) {
-                return res.status(401).json({ message: 'Unauthorized: Invalid token' });
-            }
-
-            userEmail = verifyTokenResponse.data.decoded.email
-        } catch (error) {
-            return res.status(401).json({ message: 'Unauthorized: Invalid token' });
-        }
-
         if (!longUrl) {
             return res.status(400).json({ message: 'URL is required' });
+        }
+
+        try {
+            const decodedToken = await AuthHelper.verifyToken(token);
+            userEmail = decodedToken.email
+        } catch (error) {
+            console.log(error)
+            return res.status(401).json({ message: 'Unauthorized: Invalid token' });
         }
 
         const urlMapperItemDb = await urlMapperRepository.getUrlMapperItemByLongUrl(longUrl)
