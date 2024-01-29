@@ -23,7 +23,7 @@ router.get('/url', async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'Unauthorized: Token is required' });
         }
 
-        const verifyTokenAuth = 'http://host.docker.internal:3000/auth/verify-token';
+        const verifyTokenAuth = 'http://url-shortener-auth:3000/auth/verify-token';
         try {
             const verifyTokenResponse = await axios.post(verifyTokenAuth, { token });
 
@@ -60,7 +60,7 @@ router.get('/url/:id', async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'Unauthorized: Token is required' });
         }
 
-        const verifyTokenAuth = 'http://host.docker.internal:3000/auth/verify-token';
+        const verifyTokenAuth = 'http://url-shortener-auth:3000/auth/verify-token';
         try {
             const verifyTokenResponse = await axios.post(verifyTokenAuth, { token });
 

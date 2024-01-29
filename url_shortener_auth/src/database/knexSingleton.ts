@@ -10,8 +10,8 @@ class KnexSingleton {
             const knexConfig = {
                 client: 'pg',
                 connection: {
-                    host: 'host.docker.internal',
-                    port: '5433',
+                    host: 'postgres-db-auth',
+                    port: '5432',
                     user: 'admin',
                     password: 'admin_password',
                     database: 'url_shortener_db_auth',

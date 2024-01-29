@@ -1,11 +1,14 @@
 import express, { Request, Response } from 'express';
 import axios from 'axios';
 import crypto from 'crypto';
+import useragent from 'useragent';
 import KnexSingleton from '../database/knexSingleton';
 import UrlMapperRepository from '../repositories/urlMapperRepository';
+import RequestRepository from '../repositories/requestRepository';
 
 const router = express.Router();
 const urlMapperRepository = new UrlMapperRepository(KnexSingleton);
+const requestRepository = new RequestRepository(KnexSingleton);
 const jwtSecret = process.env.JWT_SECRET || '';
 
 router.get('/:hash', async (req: Request, res: Response) => {
@@ -15,7 +18,16 @@ router.get('/:hash', async (req: Request, res: Response) => {
     if (urlMapperItem) {
         const longUrl = urlMapperItem.longUrl.startsWith('http://') || urlMapperItem.longUrl.startsWith('https://') ? urlMapperItem.longUrl : `http://${urlMapperItem.longUrl}`;
 
+        // Obter informações do cabeçalho User-Agent
+        const userAgent = req.headers['user-agent'];
+        const agent = useragent.parse(userAgent);
+
+        console.log('Dispositivo:', agent.device.family);
+        console.log('Sistema Operacional:', agent.os.family);
+        console.log('Navegador:', agent.family);
+
         await urlMapperRepository.incrementCounterUrlMapperItemByHash(hash)
+        await requestRepository.createRequestItem({ city: "cidade", country: "canada", device: agent.device.family, operationalSystem: agent.os.family, urlMapper_id: urlMapperItem.id })
 
         return res.redirect(301, longUrl);
     } else {
@@ -34,7 +46,7 @@ router.post('/shorten', async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'Unauthorized: Token is required' });
         }
 
-        const verifyTokenAuth = 'http://host.docker.internal:3000/auth/verify-token';
+        const verifyTokenAuth = 'http://url-shortener-auth:3000/auth/verify-token';
         try {
             const verifyTokenResponse = await axios.post(verifyTokenAuth, { token });
 
