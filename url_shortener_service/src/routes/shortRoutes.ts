@@ -5,6 +5,7 @@ import UrlMapperRepository from '../repositories/urlMapperRepository';
 import RequestRepository from '../repositories/requestRepository';
 import { UserAgentHelper } from '../helpers/userAgentHelper';
 import { AuthHelper } from '../helpers/authHelper';
+import { ShortenUrlValidator } from '../validators/shortenUrlValidator';
 
 const router = express.Router();
 const urlMapperRepository = new UrlMapperRepository(KnexSingleton);
@@ -33,28 +34,12 @@ router.get('/:hash', async (req: Request, res: Response) => {
     }
 });
 
-router.post('/shorten', async (req: Request, res: Response) => {
+router.post('/shorten', ShortenUrlValidator.validate, async (req: Request, res: Response) => {
     try {
+        const token = req.headers.authorization;
         const longUrl: string = req.body.url;
         let shortUrl = '';
-        let userEmail = '';
-
-        const token = req.headers.authorization;
-        if (!token) {
-            return res.status(401).json({ message: 'Unauthorized: Token is required' });
-        }
-
-        if (!longUrl) {
-            return res.status(400).json({ message: 'URL is required' });
-        }
-
-        try {
-            const decodedToken = await AuthHelper.verifyToken(token);
-            userEmail = decodedToken.email
-        } catch (error) {
-            console.log(error)
-            return res.status(401).json({ message: 'Unauthorized: Invalid token' });
-        }
+        let userEmail = await AuthHelper.getUserEmail(token);
 
         const urlMapperItemDb = await urlMapperRepository.getUrlMapperItemByLongUrl(longUrl)
         if (urlMapperItemDb) {
