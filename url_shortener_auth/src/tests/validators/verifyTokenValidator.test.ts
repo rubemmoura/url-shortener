@@ -1,27 +1,25 @@
 import { Request, Response, NextFunction } from 'express';
-import { LogoutValidator } from '../../src/validators/logoutValidator';
+import { VerifyTokenValidator } from '../../validators/verifyTokenValidator';
 
-describe('LogoutValidator', () => {
-    // Mock objects
+describe('VerifyTokenValidator', () => {
     let req: Partial<Request>;
     let res: Partial<Response>;
     let next: NextFunction;
 
     beforeEach(() => {
-        // Inicializar objetos mock
-        req = { body: { token: 'testToken' } };
+        req = { body: { token: 'valid_token' } };
         res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
         next = jest.fn();
     });
 
     test('validate() should call next() if token is provided', () => {
-        LogoutValidator.validate(req as Request, res as Response, next);
+        VerifyTokenValidator.validate(req as Request, res as Response, next);
         expect(next).toHaveBeenCalled();
     });
 
     test('validate() should return 400 if token is not provided', () => {
         req.body = {};
-        LogoutValidator.validate(req as Request, res as Response, next);
+        VerifyTokenValidator.validate(req as Request, res as Response, next);
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalled();
     });

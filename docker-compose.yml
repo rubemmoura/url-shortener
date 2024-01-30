@@ -12,7 +12,7 @@ services:
     environment:
       NODE_ENV: development
     command: >
-      bash -c "npm install && npm start"
+      bash -c "npm run clear:all && npm install && npm start"
     networks:
       - url_shortener_network
 
@@ -27,7 +27,7 @@ services:
     environment:
       NODE_ENV: development
     command: >
-      bash -c "npm install && npm start"
+      bash -c "npm run clear:all && npm install && npm start"
     networks:
       - url_shortener_network
 

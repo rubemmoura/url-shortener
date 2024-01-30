@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthenticationUserValidator } from '../../src/validators/authenticationUserValidator';
+import { AuthenticationUserValidator } from '../../validators/authenticationUserValidator';
 
 describe('AuthenticationUserValidator', () => {
     let req: Partial<Request>;

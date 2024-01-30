@@ -1,22 +1,22 @@
 {
-    "name": "url-shortener",
-    "description": "Create a project with TypeScript support",
+    "name": "url-shortener-auth",
+    "description": "url-shortener authenticator",
     "version": "1.0.6",
     "license": "MIT",
     "author": {
-        "name": "Piotr Kowalski",
-        "email": "piecioshka@gmail.com",
-        "url": "https://piecioshka.pl/"
+        "name": "Rubem Moura",
+        "email": "rubemfmourajr@gmail.com"
     },
     "scripts": {
         "clear": "rm -rf dist/",
         "clear:all": "rm -rf node_modules/ && npm run clear",
-        "test": "jest",
+        "test": "npm run clear:all && npm i && jest",
         "start": "tsc && node dist/index.js",
         "dev": "ts-node src/index.ts"
     },
     "dependencies": {
         "@types/node": "^20.9.0",
+        "axios": "^1.6.7",
         "bcrypt": "^5.1.1",
         "bcryptjs": "^2.4.3",
         "dotenv": "^16.4.1",
@@ -27,12 +27,13 @@
         "knex": "^3.1.0",
         "pg": "^8.11.3",
         "replace-in-files": "^3.0.0",
+        "supertest": "^6.3.4",
         "ts-node": "^10.9.1",
         "yargs": "^17.7.2"
     },
     "repository": {
         "type": "git",
-        "url": "git@github.com:piecioshka/url-shortener.git"
+        "url": "git@github.com:rubemmoura/url-shortener.git"
     },
     "engines": {
         "node": ">=10"
@@ -62,6 +63,7 @@
         "@types/jest": "^29.5.11",
         "@types/jsonwebtoken": "^9.0.5",
         "@types/knex": "^0.16.1",
+        "@types/supertest": "^6.0.2",
         "jest": "^29.7.0",
         "ts-jest": "^29.1.2",
         "typescript": "^5.3.3"
