@@ -16,11 +16,16 @@ exports.up = function (knex) {
       table.string('browser', 255).notNullable();
       table.string('city', 255).notNullable();
       table.timestamp('createdAt').defaultTo(knex.fn.now());
-      table.foreign('urlMapper_id').references('id').inTable('urlMapper');
+      table.foreign('urlMapper_id')
+        .references('id')
+        .inTable('urlMapper')
+        .onDelete('CASCADE');
     });
   })
 };
 
 exports.down = function (knex) {
-  return knex.schema.dropTableIfExists('urlMapper')
+  return knex.schema.dropTableIfExists('request').then(() => {
+    return knex.schema.dropTableIfExists('urlMapper');
+  });
 };

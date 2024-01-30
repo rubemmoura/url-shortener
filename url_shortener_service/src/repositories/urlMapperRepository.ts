@@ -63,6 +63,10 @@ class UrlMapperRepository {
         await this.knex('urlMapper').where({ id }).del();
     }
 
+    async deleteUrlMapperItemByLongUrl(longUrl: string): Promise<void> {
+        await this.knex('urlMapper').where({ longUrl }).del();
+    }
+
     async incrementCounterUrlMapperItemByHash(hash: string): Promise<void> {
         await this.knex('urlMapper').where({ hash }).increment('accessCount', 1);
     }
