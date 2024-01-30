@@ -10,7 +10,7 @@
     "scripts": {
         "clear": "rm -rf dist/",
         "clear:all": "rm -rf node_modules/ && npm run clear",
-        "test": "npm run clear:all && npm i && jest",
+        "test": "npm run clear:all && npm i && jest --coverage",
         "start": "tsc && node dist/index.js",
         "dev": "ts-node src/index.ts"
     },
