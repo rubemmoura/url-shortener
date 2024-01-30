@@ -3,10 +3,12 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import UserRepository from "../repositories/userRepository"
 import KnexSingleton from '../database/knexSingleton';
-import registerUserValidator from '../validators/registerUserValidator';
-import authenticationUserValidator from '../validators/authenticationUserValidator';
+import { RegisterUserValidator } from '../validators/registerUserValidator';
+import { AuthenticationUserValidator } from '../validators/authenticationUserValidator';
 import RoleRepository from '../repositories/roleRepository';
 import BlackListRepository from '../repositories/balckListRepository';
+import { VerifyTokenValidator } from '../validators/verifyTokenValidator';
+import { LogoutValidator } from '../validators/logoutValidator';
 
 const router = express.Router();
 const userRepository = new UserRepository(KnexSingleton);
@@ -14,22 +16,18 @@ const roleRepository = new RoleRepository(KnexSingleton);
 const blackListRepository = new BlackListRepository(KnexSingleton);
 const jwtSecret = process.env.JWT_SECRET || '';
 
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', RegisterUserValidator.validate, async (req: Request, res: Response) => {
     try {
-        const { error, value } = registerUserValidator.validate(req.body);
+        const { email, password, role } = req.body;
+        const [roleDb, existingUser] = await Promise.all([
+            roleRepository.getRoleByName(role),
+            userRepository.getUserByEmail(email)
+        ]);
 
-        if (error) {
-            return res.status(400).json({ message: 'Body error', details: error.details });
-        }
-
-        const { email, password, role } = value;
-
-        const roleDb = await roleRepository.getRoleByName(role);
         if (!roleDb) {
             return res.status(400).json({ message: 'This role doesn\'t exists' });
         }
 
-        const existingUser = await userRepository.getUserByEmail(email);
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
@@ -42,15 +40,9 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 });
 
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', AuthenticationUserValidator.validate, async (req: Request, res: Response) => {
     try {
-        const { error, value } = authenticationUserValidator.validate(req.body);
-
-        if (error) {
-            return res.status(400).json({ message: 'Body error', details: error.details });
-        }
-
-        const { email, password } = value;
+        const { email, password } = req.body;
 
         const user = await userRepository.getUserByEmail(email);
         if (!user) {
@@ -65,8 +57,6 @@ router.post('/login', async (req: Request, res: Response) => {
         const role = await roleRepository.getRoleById(user.role_id);
 
         // Gera um token JWT
-        console.log('jwtSecret: ', jwtSecret)
-        // const token = jwt.sign({ userId: user.id, email: user.email, role: user.role }, jwtSecret, { expiresIn: '1h' });
         const token = jwt.sign({ userId: user.id, email: user.email, role: role.name }, 'seu_segredo_secreto_aqui', { expiresIn: '1h' });
 
         return res.status(200).json({ message: 'Login successfully', token });
@@ -76,19 +66,16 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 });
 
-router.post('/verify-token', async (req: Request, res: Response) => {
+router.post('/verify-token', VerifyTokenValidator.validate, async (req: Request, res: Response) => {
     try {
         const token = req.body.token;
-
-        if (!token) {
-            return res.status(400).json({ message: 'Token is required' });
-        }
 
         const blackListItem = await blackListRepository.getBlackListItemByToken(token);
         if (blackListItem) {
             return res.status(400).json({ message: 'Invalid token' });
         }
 
+        // TODO: Try to use jwtSecret from .env
         // jwt.verify(token, jwtSecret as string, (err: any, decoded: any) => {
         jwt.verify(token, 'seu_segredo_secreto_aqui' as string, (err: any, decoded: any) => {
             if (err) {
@@ -103,14 +90,9 @@ router.post('/verify-token', async (req: Request, res: Response) => {
     }
 });
 
-router.post('/logout', async (req: Request, res: Response) => {
+router.post('/logout', LogoutValidator.validate, async (req: Request, res: Response) => {
     try {
         const token = req.body.token;
-
-        if (!token) {
-            return res.status(400).json({ message: 'Token is required' });
-        }
-
         const blackListItem = await blackListRepository.createBlackListItem({ token });
 
         return res.status(200).json({ message: 'You have successfully logged out', blackListItem });
