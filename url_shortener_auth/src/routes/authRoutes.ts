@@ -1,12 +1,12 @@
 import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import UserRepository from "../repositories/userRepository"
 import KnexSingleton from '../database/knexSingleton';
-import { RegisterUserValidator } from '../validators/registerUserValidator';
-import { AuthenticationUserValidator } from '../validators/authenticationUserValidator';
+import UserRepository from "../repositories/userRepository"
 import RoleRepository from '../repositories/roleRepository';
-import BlackListRepository from '../repositories/balckListRepository';
+import BlackListRepository from '../repositories/blackListRepository';
+import { AuthenticationUserValidator } from '../validators/authenticationUserValidator';
+import { RegisterUserValidator } from '../validators/registerUserValidator';
 import { VerifyTokenValidator } from '../validators/verifyTokenValidator';
 import { LogoutValidator } from '../validators/logoutValidator';
 
