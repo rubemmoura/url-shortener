@@ -2,7 +2,7 @@ import axios from 'axios';
 import { DecodedTokenItem } from '../interfaces/decodedTokenItem';
 
 export class AuthHelper {
-    static async verifyToken(token: string | undefined): Promise<DecodedTokenItem> {
+    static async verifyToken(token: string | undefined): Promise<DecodedTokenItem | null> {
         const verifyTokenAuth = 'http://url-shortener-auth:3000/auth/verify-token';
         try {
             if (token) {
@@ -26,7 +26,7 @@ export class AuthHelper {
             if (!token) return undefined;
 
             const decodedToken = await this.verifyToken(token);
-            return decodedToken.role;
+            return decodedToken?.role;
         } catch (error) {
             console.log(error);
             return undefined;
@@ -38,7 +38,7 @@ export class AuthHelper {
             if (!token) return undefined;
 
             const decodedToken = await this.verifyToken(token);
-            return decodedToken.email;
+            return decodedToken?.email;
         } catch (error) {
             console.log(error);
             return undefined;

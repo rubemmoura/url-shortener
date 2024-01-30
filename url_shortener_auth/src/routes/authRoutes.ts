@@ -9,6 +9,7 @@ import { AuthenticationUserValidator } from '../validators/authenticationUserVal
 import { RegisterUserValidator } from '../validators/registerUserValidator';
 import { VerifyTokenValidator } from '../validators/verifyTokenValidator';
 import { LogoutValidator } from '../validators/logoutValidator';
+import { DeleteUserValidator } from '../validators/deleteUserValidator';
 
 const router = express.Router();
 const userRepository = new UserRepository(KnexSingleton);
@@ -36,6 +37,25 @@ router.post('/register', RegisterUserValidator.validate, async (req: Request, re
         return res.status(201).json(newUser);
     } catch (error) {
         console.error('Error trying to register new user:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+router.delete('/delete', DeleteUserValidator.validate, async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+        const [existingUser] = await Promise.all([
+            userRepository.getUserByEmail(email)
+        ]);
+
+        if (!existingUser) {
+            return res.status(404).json({ message: 'User doesn\'t exists' });
+        }
+
+        await userRepository.deleteUserByEmail(email)
+        return res.status(200).json({ message: 'Deleted' });
+    } catch (error) {
+        console.error('Error trying to delete new user:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 });
