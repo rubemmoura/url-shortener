@@ -27,6 +27,7 @@
         "knex": "^3.1.0",
         "pg": "^8.11.3",
         "replace-in-files": "^3.0.0",
+        "swagger-autogen": "^2.23.7",
         "ts-node": "^10.9.1",
         "typescript": "^5.2.2",
         "useragent": "^2.3.0",

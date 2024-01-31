@@ -1,0 +1,7 @@
+info:
+  title: "URL-Shortener Authentication API"
+  description: "API for authentication"
+  version: "1.0.0"
+
+servers:
+  - url: "http://localhost:3000"
