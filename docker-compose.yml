@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+  url-shortener-auth:
+    image: node:20
+    container_name: url-shortener-auth
+    working_dir: /app
+    volumes:
+      - ./url_shortener_auth:/app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+    command: >
+      bash -c "npm run clear:all && npm install && npm start"
+    networks:
+      - url_shortener_network
+
+  url-shortener-service:
+    image: node:20
+    container_name: url-shortener-service
+    working_dir: /app
+    volumes:
+      - ./url_shortener_service:/app
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+    command: >
+      bash -c "npm run clear:all && npm install && npm start"
+    networks:
+      - url_shortener_network
+
+  postgres-db-service:
+    image: postgres:latest
+    container_name: postgres-db-service
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: url_shortener_db_service
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin_password
+    networks:
+      - url_shortener_network
+
+  postgres-db-auth:
+    image: postgres:latest
+    container_name: postgres-db-auth
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: url_shortener_db_auth
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin_password
+    networks:
+      - url_shortener_network
+
+  migration-service:
+      image: node:20
+      container_name: migration-service
+      volumes:
+        - ./migration:/migration
+      environment:
+        NODE_ENV: development
+      command: >
+        bash -c "sleep 10 && cd /migration && npm run clear:all && npm i && node migrate.js"
+      networks:
+        - url_shortener_network
+      depends_on:
+        - postgres-db-service
+        - postgres-db-auth
+
+networks:
+  url_shortener_network:
