@@ -1,4 +1,5 @@
 import KnexSingleton from '../database/knexSingleton';
+import { UrlMapperItemDb } from '../database/models/urlMapperItemDb';
 import { UrlMapperItem } from '../interfaces/urlMapperItem';
 
 class UrlMapperRepository {
@@ -8,22 +9,22 @@ class UrlMapperRepository {
         this.knex = knex;
     }
 
-    async createUrlMapperItem(urlMapper: UrlMapperItem): Promise<UrlMapperItem> {
+    async createUrlMapperItem(urlMapper: UrlMapperItem): Promise<UrlMapperItemDb> {
         const [createdUrlMapperItem] = await this.knex('urlMapper').insert(urlMapper).returning('*');
         return createdUrlMapperItem;
     }
 
-    async getUrlMapperItemByLongUrl(longUrl: string): Promise<UrlMapperItem> {
+    async getUrlMapperItemByLongUrl(longUrl: string): Promise<UrlMapperItemDb> {
         const urlMapperItem = await this.knex('urlMapper').where({ longUrl }).first();
         return urlMapperItem;
     }
 
-    async getUrlMapperItemByHash(hash: string): Promise<UrlMapperItem> {
+    async getUrlMapperItemByHash(hash: string): Promise<UrlMapperItemDb> {
         const urlMapperItem = await this.knex('urlMapper').where({ hash }).first();
         return urlMapperItem;
     }
 
-    async getUrlMapperItemById(id: number): Promise<UrlMapperItem> {
+    async getUrlMapperItemById(id: number): Promise<UrlMapperItemDb> {
         const urlMapperItem = await this.knex('urlMapper').where({ id }).first();
         return urlMapperItem;
     }
@@ -33,7 +34,7 @@ class UrlMapperRepository {
         pageSize: number = 10,
         longUrlFilter: string = '',
         createdByFilter: string = ''
-    ): Promise<UrlMapperItem[]> {
+    ): Promise<UrlMapperItemDb[]> {
         const offset = (pageNumber - 1) * pageSize;
 
         let query = this.knex('urlMapper')

@@ -55,5 +55,20 @@ services:
     networks:
       - url_shortener_network
 
+  migration-service:
+      image: node:20
+      container_name: migration-service
+      volumes:
+        - ./migration:/migration
+      environment:
+        NODE_ENV: development
+      command: >
+        bash -c "sleep 10 && cd /migration && npm run clear:all && npm i && node migrate.js"
+      networks:
+        - url_shortener_network
+      depends_on:
+        - postgres-db-service
+        - postgres-db-auth
+
 networks:
   url_shortener_network:

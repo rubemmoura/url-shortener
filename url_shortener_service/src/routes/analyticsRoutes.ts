@@ -4,6 +4,7 @@ import UrlMapperRepository from '../repositories/urlMapperRepository';
 import { UrlMapperValidator } from '../validators/urlMapperValidator';
 import { UrlMapperIdValidator } from '../validators/urlMapperByIdValidator';
 import RequestRepository from '../repositories/requestRepository';
+import ParseUrlMapperItemsResponseHelper from '../helpers/parseUrlMapperItemsResponseHelper'
 
 const router = express.Router();
 const urlMapperRepository = new UrlMapperRepository(KnexSingleton);
@@ -17,34 +18,32 @@ router.get('/url', UrlMapperValidator.validate, async (req: Request, res: Respon
         const longUrlFilter = req.query.longUrlFilter?.toString() || '';
         const createdByFilter = req.query.createdByFilter?.toString() || '';
 
-        const urlMapperItems = await urlMapperRepository.getAllUrlMapper(parseInt(page, 10), parseInt(pageSize, 10), longUrlFilter, createdByFilter);
-        const urlMapperCount = await urlMapperRepository.countUrlMapperItems();
-        const requestInfoByWeek = await requestRepository.getRequestCountsByWeek();
-        const requestInfoByMonth = await requestRepository.getRequestCountsByMonth();
+        const [
+            urlMapperItemsDb,
+            urlMapperCount,
+            requestInfoByWeek,
+            requestInfoByMonth,
+            requestInfoByOperationalSystem,
+            requestInfoByDevices,
+            requestInfoByBrowser
+        ] = await Promise.all([
+            urlMapperRepository.getAllUrlMapper(parseInt(page, 10), parseInt(pageSize, 10), longUrlFilter, createdByFilter),
+            urlMapperRepository.countUrlMapperItems(),
+            requestRepository.getRequestCountsByWeek(),
+            requestRepository.getRequestCountsByMonth(),
+            requestRepository.getRequestCountsByOperationalSystem(),
+            requestRepository.getRequestCountsByDevices(),
+            requestRepository.getRequestCountsByBrowser()
+        ]);
 
-        console.log(requestInfoByWeek)
-        console.log(requestInfoByMonth)
-
-        // TODO extrac this to a function
-        urlMapperItems.forEach(urlMapper => {
-            urlMapper.week_start = '';
-            urlMapper.week_request_count = 0;
-            const infoByWeek = requestInfoByWeek.find(item => item.urlMapper_id === urlMapper.id);
-            if (infoByWeek) {
-                urlMapper.week_start = infoByWeek.week_start;
-                urlMapper.week_request_count = infoByWeek.request_count;
-            }
-        });
-
-        urlMapperItems.forEach(urlMapper => {
-            urlMapper.month_start = '';
-            urlMapper.month_request_count = 0;
-            const infoByMonth = requestInfoByMonth.find(item => item.urlMapper_id === urlMapper.id);
-            if (infoByMonth) {
-                urlMapper.month_start = infoByMonth.month_start;
-                urlMapper.month_request_count = infoByMonth.request_count;
-            }
-        });
+        const urlMapperItems = ParseUrlMapperItemsResponseHelper.parseUrlMapperItems(
+            urlMapperItemsDb,
+            requestInfoByWeek,
+            requestInfoByMonth,
+            requestInfoByDevices,
+            requestInfoByOperationalSystem,
+            requestInfoByBrowser
+        )
 
         return res.status(200).json({ urlMapperItems, maxItems: urlMapperCount });
     } catch (error) {
@@ -56,9 +55,38 @@ router.get('/url', UrlMapperValidator.validate, async (req: Request, res: Respon
 router.get('/url/:id', UrlMapperIdValidator.validate, async (req: Request, res: Response) => {
     try {
         const id: number = parseInt(req.params.id, 10);
-        const urlMapperItem = await urlMapperRepository.getUrlMapperItemById(id);
+        const [
+            urlMapperItemDb,
+            requestInfoByWeek,
+            requestInfoByMonth,
+            requestInfoByOperationalSystem,
+            requestInfoByDevices,
+            requestInfoByBrowser
+        ] = await Promise.all([
+            urlMapperRepository.getUrlMapperItemById(id),
+            requestRepository.getRequestCountsByWeekById(id),
+            requestRepository.getRequestCountsByMonthById(id),
+            requestRepository.getRequestCountsByOperationalSystemById(id),
+            requestRepository.getRequestCountsByDevicesById(id),
+            requestRepository.getRequestCountsByBrowserById(id)
+        ]);
 
-        return res.status(200).json(urlMapperItem);
+        if (urlMapperItemDb) {
+            const urlMapperItem = ParseUrlMapperItemsResponseHelper.parseUrlMapperItem(
+                urlMapperItemDb,
+                requestInfoByWeek,
+                requestInfoByMonth,
+                requestInfoByDevices,
+                requestInfoByOperationalSystem,
+                requestInfoByBrowser
+            )
+            
+            return res.status(200).json(urlMapperItem);
+        } else {
+            return res.status(404).json({ message: 'UrlMapper Not found' });
+        }
+
+
     } catch (error) {
         console.error('Error trying to get urlMapper:', error);
         return res.status(500).json({ message: 'Internal server error' });

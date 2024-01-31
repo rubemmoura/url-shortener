@@ -12,7 +12,10 @@ info:
     These routes facilitate user authentication and management within the URL Shortener Service.
 
   version: '1.0.0'
-
+host: localhost:3000
+basePath: /
+schemes:
+  - http
 paths:
   /register:
     post:

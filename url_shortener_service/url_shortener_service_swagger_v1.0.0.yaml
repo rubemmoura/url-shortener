@@ -23,7 +23,7 @@ schemes:
 tags:
   - name: Shortener
     description: "Routes related to authentication"
-  - name: URL Analytics
+  - name: URL-Analytics
     description: "Routes related to URL analytics"
 paths:
   /{hash}:
@@ -91,8 +91,8 @@ paths:
   /analytics/url:
     get:
       tags:
-        - URL Analytics
-      description: 'Endpoint to retrieve URL analytics data. This endpoint is restricted to users with ADMIN privileges. The user token must be provided in the request header for authentication. Pagination is supported, allowing users to specify the page number and page size for data retrieval. If not specified, the default page is 1 with 10 items per page. Filters can be applied using the longUrlFilter and createdByFilter parameters to narrow down the search results.'
+        - URL-Analytics
+      description: 'Endpoint to retrieve URL analytics data. This endpoint is restricted to users with ADMIN privileges. The user token must be provided in the request header for authentication. Pagination is supported, allowing users to specify the page number and page size for data retrieval. If not specified, the default page is 1 with 10 items per page. Filters can be applied using the longUrlFilter and createdByFilter parameters to narrow down the search results. This route returns information about the number of requests made for each stored URL by device, operational system, browser, week, and month.'
       parameters:
         - name: page
           in: query
@@ -145,6 +145,68 @@ paths:
                       type: string
                       format: date-time
                       description: 'Creation date and time of the URL mapper item.'
+                    request_per_weeks:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          week_start:
+                            type: string
+                            format: date-time
+                            description: 'Start of the week.'
+                          request_count:
+                            type: number
+                            description: 'Number of requests.'
+                      description: 'Requests per week.'
+                    request_per_months:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          month_start:
+                            type: string
+                            format: date-time
+                            description: 'Start of the month.'
+                          request_count:
+                            type: number
+                            description: 'Number of requests.'
+                      description: 'Requests per month.'
+                    request_per_devices:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          device:
+                            type: string
+                            description: 'Device type.'
+                          request_count:
+                            type: number
+                            description: 'Number of requests.'
+                      description: 'Requests per device.'
+                    request_per_operational_systems:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          operationalSystem:
+                            type: string
+                            description: 'Operating system.'
+                          request_count:
+                            type: number
+                            description: 'Number of requests.'
+                      description: 'Requests per operating system.'
+                    request_per_browser:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          browser:
+                            type: string
+                            description: 'Web browser.'
+                          request_count:
+                            type: number
+                            description: 'Number of requests.'
+                      description: 'Requests per web browser.'
               maxItems:
                 type: number
                 description: 'Total number of URL mapper items.'
@@ -158,10 +220,11 @@ paths:
                 description: 'Error message indicating token is required.'
 
 
+
   /analytics/url/{id}:
     get:
       tags:
-        - URL Analytics
+        - URL-Analytics
       description: 'This endpoint is used to retrieve URL analytics data by providing the ID of the URL mapper item. It is accessible only to ADMIN users, who must also provide a valid authentication token in the request header. The `id` parameter in the path represents the ID of the URL mapper item. Upon successful retrieval, the response will contain detailed information about the URL mapper item.'
       parameters:
         - name: id
@@ -199,6 +262,68 @@ paths:
                 type: string
                 format: date-time
                 description: 'Creation date and time of the URL mapper item.'
+              request_per_weeks:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    week_start:
+                      type: string
+                      format: date-time
+                      description: 'Start date of the week.'
+                    request_count:
+                      type: number
+                      description: 'Request count for the week.'
+                description: 'Requests per week.'
+              request_per_months:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    month_start:
+                      type: string
+                      format: date-time
+                      description: 'Start date of the month.'
+                    request_count:
+                      type: number
+                      description: 'Request count for the month.'
+                description: 'Requests per month.'
+              request_per_devices:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    device:
+                      type: string
+                      description: 'Device type.'
+                    request_count:
+                      type: number
+                      description: 'Request count for the device.'
+                description: 'Requests per device.'
+              request_per_operational_systems:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    operationalSystem:
+                      type: string
+                      description: 'Operating system.'
+                    request_count:
+                      type: number
+                      description: 'Request count for the operating system.'
+                description: 'Requests per operational system.'
+              request_per_browser:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    browser:
+                      type: string
+                      description: 'Browser type.'
+                    request_count:
+                      type: number
+                      description: 'Request count for the browser.'
+                description: 'Requests per browser.'
         '400':
           description: 'Bad Request'
         '401':
