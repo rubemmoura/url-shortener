@@ -21,6 +21,30 @@ class RequestRepository {
     async deleteRequestItemById(id: number): Promise<void> {
         await this.knex('request').where({ id }).del();
     }
+
+    async getRequestCountsByWeek(): Promise<any[]> {
+        const result = await this.knex('request')
+            .select('urlMapper_id')
+            .select(this.knex.raw("DATE_TRUNC('week', \"createdAt\") AS week_start"))
+            .count('* as request_count')
+            .groupBy('urlMapper_id', 'week_start')
+            .orderBy('urlMapper_id')
+            .orderBy('week_start');
+
+        return result;
+    }
+
+    async getRequestCountsByMonth(): Promise<any[]> {
+        const result = await this.knex('request')
+            .select('urlMapper_id')
+            .select(this.knex.raw("DATE_TRUNC('month', \"createdAt\") AS month_start"))
+            .count('* as request_count')
+            .groupBy('urlMapper_id', 'month_start')
+            .orderBy('urlMapper_id')
+            .orderBy('month_start');
+
+        return result;
+    }
 }
 
 export default RequestRepository;

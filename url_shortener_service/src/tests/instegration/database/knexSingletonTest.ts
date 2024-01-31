@@ -1,11 +1,11 @@
-import Knex from 'knex';
+import knex, { Knex } from 'knex';
 
 class KnexSingletonTest {
-    private static instance: typeof Knex | any = null;
+    private static instance: Knex<any, any> | null = null;
 
     private constructor() { }
 
-    public static getInstance(): typeof Knex {
+    public static getInstance(): Knex<any, any> {
         if (!KnexSingletonTest.instance) {
             const knexConfig = {
                 client: 'pg',
@@ -17,10 +17,13 @@ class KnexSingletonTest {
                     database: 'url_shortener_db_service',
                 },
             };
-            KnexSingletonTest.instance = Knex(knexConfig);
+            KnexSingletonTest.instance = knex(knexConfig);
+        }
+        if (!KnexSingletonTest.instance) {
+            throw new Error('Knex instance was not created properly');
         }
         return KnexSingletonTest.instance;
     }
 }
 
-export default KnexSingletonTest.getInstance();
+export default KnexSingletonTest.getInstance(); // Exporta a instância do Knex
