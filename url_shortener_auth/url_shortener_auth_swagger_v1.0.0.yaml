@@ -1,0 +1,250 @@
+swagger: '2.0'
+info:
+  title: URL Shortener Authentication Service API
+  description: |
+    The URL Shortener Authentication Service API provides endpoints for user authentication management. It includes the following routes:
+    - `/login`: Used for user login and token generation.
+    - `/logout`: Enables users to log out and invalidate their tokens.
+    - `/verify-token`: Validates user tokens.
+    - `/register`: Allows users to register new accounts.
+    - `/delete`: Used to delete user accounts.
+
+    These routes facilitate user authentication and management within the URL Shortener Service.
+
+  version: '1.0.0'
+
+paths:
+  /register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: |
+        This endpoint allows the creation of a new user with the specified role. The request body must include the user's email, password, and role. The role must be ADMIN or USER. 
+      parameters:
+        - in: body
+          name: body
+          description: User information for registration
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+              role:
+                type: string
+      responses:
+        '201':
+          description: User successfully registered
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              email:
+                type: string
+              password:
+                type: string
+                description: encrypted password
+              role_id:
+                type: integer
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+
+
+  /delete:
+    delete:
+      tags:
+        - Authentication
+      summary: Delete a user
+      description: |
+        This endpoint is used to delete a pre-registered user by providing the user's email.
+      parameters:
+        - in: body
+          name: body
+          description: User email for deletion
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+      responses:
+        '200':
+          description: User successfully deleted
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Deleted
+        '404':
+          description: User not found
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: User doesn't exists
+        '500':
+          description: Internal server error
+
+
+  /login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: This route is used for user authentication. It allows users to log in by providing their email and password.
+      parameters:
+        - in: body
+          name: body
+          description: User credentials for login
+          required: true
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      responses:
+        '200':
+          description: Login successful
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Login successfully"
+              token:
+                type: string
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsImVtYWlsIjoicnViZW1AZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzA2Njc4NDEwLCJleHAiOjE3MDY2ODIwMTB9._9lsr1Qft3hjMMaWo4HrUxrSe6Z5-kN5Oyo2omqwGQU"
+        '400':
+          description: Bad request
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Body error"
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "email is required"
+                    path:
+                      type: array
+                      items:
+                        type: string
+                      example: ["email"]
+                    type:
+                      type: string
+                      example: "string"
+        '401':
+          description: Invalid credentials
+        '500':
+          description: Internal server error
+
+
+
+  /verify-token:
+    post:
+      tags:
+        - Authentication
+      summary: Verify user token
+      description: This route is used to verify a user token. If the token is expired or invalid, it will return an error response. If the token is valid, it will return a success response along with decoded token information.
+      parameters:
+        - in: body
+          name: body
+          description: User token for verification
+          required: true
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+      responses:
+        '200':
+          description: Token verified successfully
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Valid token"
+              decoded:
+                type: object
+                properties:
+                  userId:
+                    type: number
+                    example: 3
+                  email:
+                    type: string
+                    example: "rubem@gmail.com"
+                  role:
+                    type: string
+                    example: "ADMIN"
+                  iat:
+                    type: number
+                    example: 1706678410
+                  exp:
+                    type: number
+                    example: 1706682010
+        '400':
+          description: Invalid token
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Invalid token"
+        '401':
+          description: Invalid token
+        '500':
+          description: Internal server error
+
+
+  /logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      description: This route is used to log out the user from the system, making their token invalid.
+      parameters:
+        - in: body
+          name: body
+          description: User token for logout
+          required: true
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+      responses:
+        '200':
+          description: User successfully logged out
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "You have successfully logged out"
+              blackListItem:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 56
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsImVtYWlsIjoicnViZW1AZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzA2Njc4NDEwLCJleHAiOjE3MDY2ODIwMTB9._9lsr1Qft3hjMMaWo4HrUxrSe6Z5-kN5Oyo2omqwGQU"
+        '500':
+          description: Internal server error
