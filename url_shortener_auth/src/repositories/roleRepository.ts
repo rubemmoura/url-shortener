@@ -1,4 +1,5 @@
 import KnexSingleton from '../database/knexSingleton';
+import { RoleDb } from '../database/models/roleDb';
 import { Role } from '../interfaces/role';
 
 class RoleRepository {
@@ -8,17 +9,17 @@ class RoleRepository {
         this.knex = knex;
     }
 
-    async createRole(role: Role): Promise<Role> {
+    async createRole(role: Role): Promise<RoleDb> {
         const [createdRole] = await this.knex('role').insert(role).returning('*');
         return createdRole;
     }
 
-    async getRoleByName(name: string): Promise<Role> {
+    async getRoleByName(name: string): Promise<RoleDb> {
         const role = await this.knex('role').where({ name }).first();
         return role;
     }
 
-    async getRoleById(id: number): Promise<Role> {
+    async getRoleById(id: number): Promise<RoleDb> {
         const role = await this.knex('role').where({ id }).first();
         return role;
     }

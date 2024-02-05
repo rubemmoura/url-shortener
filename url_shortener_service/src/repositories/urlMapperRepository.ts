@@ -41,7 +41,8 @@ class UrlMapperRepository {
             .where('longUrl', 'like', `%${longUrlFilter}%`)
             .where('createdBy', 'like', `%${createdByFilter}%`)
             .limit(pageSize)
-            .offset(offset);
+            .offset(offset)
+            .orderBy('id', 'asc');
 
         const urlMapperItems = await query;
 

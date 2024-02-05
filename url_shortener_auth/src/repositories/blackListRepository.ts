@@ -1,4 +1,5 @@
 import KnexSingleton from '../database/knexSingleton';
+import { BlackListItemDb } from '../database/models/blackListItemDb';
 import { BlackListItem } from '../interfaces/blackListItem';
 
 class BlackListRepository {
@@ -8,12 +9,12 @@ class BlackListRepository {
         this.knex = knex;
     }
 
-    async createBlackListItem(blackListItem: BlackListItem): Promise<BlackListItem> {
+    async createBlackListItem(blackListItem: BlackListItem): Promise<BlackListItemDb> {
         const [createdBlackListItem] = await this.knex('blackList').insert(blackListItem).returning('*');
         return createdBlackListItem;
     }
 
-    async getBlackListItemByToken(token: string): Promise<BlackListItem> {
+    async getBlackListItemByToken(token: string): Promise<BlackListItemDb> {
         const blackListItem = await this.knex('blackList').where({ token }).first();
         return blackListItem;
     }
