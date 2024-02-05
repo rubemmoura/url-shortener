@@ -26,4 +26,4 @@ class KnexSingleton {
     }
 }
 
-export default KnexSingleton.getInstance(); // Exporta a instância do Knex
+export default KnexSingleton.getInstance();
