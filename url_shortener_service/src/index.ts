@@ -1,6 +1,6 @@
 import express from 'express';
 import analyticsRoutes from './routes/analyticsRoutes';
-import shortRoutes from './routes/shortRoutes'
+import shortRoutes from './routes/shortRoutes';
 
 require('dotenv').config();
 

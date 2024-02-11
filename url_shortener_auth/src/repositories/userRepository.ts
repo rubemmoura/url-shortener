@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import KnexSingleton from '../database/knexSingleton';
+import { UserDb } from '../database/models/userDb';
 import { User } from '../interfaces/user';
 
 class UserRepository {
@@ -9,8 +10,9 @@ class UserRepository {
         this.knex = knex;
     }
 
-    async createUser(user: User): Promise<User> {
-        const hashedPassword = await bcrypt.hash(user.password, 10); // 10 é o custo do hash, quanto maior, mais seguro, mas mais lento
+    async createUser(user: User): Promise<UserDb> {
+        // 10 is the cost of the hash, the higher, the more secure, but slower
+        const hashedPassword = await bcrypt.hash(user.password, 10);
         const userToInsert: User = {
             ...user,
             password: hashedPassword
@@ -20,7 +22,7 @@ class UserRepository {
         return createdUser;
     }
 
-    async getUserByEmail(email: string): Promise<User | undefined> {
+    async getUserByEmail(email: string): Promise<UserDb | undefined> {
         const user = await this.knex('user').where({ email }).first();
         return user;
     }

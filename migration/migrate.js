@@ -10,6 +10,7 @@ async function runMigrations() {
         db = knex(knexConfig.service);
         await db.migrate.latest();
         console.log('Service db migrations ran successfully');
+
         process.exit(0);
     } catch (error) {
         console.error('Error running migrations:', error);
