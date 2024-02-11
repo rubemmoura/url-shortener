@@ -27,8 +27,8 @@ class ShortenUrlController {
                 await this.urlMapperRepository.incrementCounterUrlMapperItemByHash(hash)
                 await this.requestRepository.createRequestItem(
                     {
-                        city: "cidade",
-                        country: "canada",
+                        city: "cityMock",
+                        country: "countryMock",
                         device,
                         operationalSystem: os,
                         urlMapper_id: urlMapperItem.id,
