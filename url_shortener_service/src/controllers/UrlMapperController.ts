@@ -1,16 +1,28 @@
 import { Request, Response } from 'express';
 import KnexSingleton from '../database/knexSingleton';
 import ParseUrlMapperItemsResponseHelper from '../helpers/parseUrlMapperItemsResponseHelper';
-import RequestRepository from '../repositories/requestRepository';
+import RequestByBrowserRepository from '../repositories/requestByBrowserRepository';
+import RequestByDeviceRepository from '../repositories/requestByDeviceRepository';
+import RequestByMonthRepository from '../repositories/requestByMonthRepository';
+import RequestByOperationalSystemRepository from '../repositories/requestByOperationalSystemRepository';
+import RequestByWeekRepository from '../repositories/requestByWeekRepository';
 import UrlMapperRepository from '../repositories/urlMapperRepository';
 
 class UrlMapperController {
     private urlMapperRepository: UrlMapperRepository;
-    private requestRepository: RequestRepository;
+    private requestByWeekRepository: RequestByWeekRepository;
+    private requestByMonthRepository: RequestByMonthRepository;
+    private requestByDeviceRepository: RequestByDeviceRepository;
+    private requestByOperationalSystemRepository: RequestByOperationalSystemRepository;
+    private requestByBrowserRepository: RequestByBrowserRepository;
 
     constructor() {
         this.urlMapperRepository = new UrlMapperRepository(KnexSingleton);
-        this.requestRepository = new RequestRepository(KnexSingleton);
+        this.requestByWeekRepository = new RequestByWeekRepository(KnexSingleton);
+        this.requestByMonthRepository = new RequestByMonthRepository(KnexSingleton);
+        this.requestByDeviceRepository = new RequestByDeviceRepository(KnexSingleton);
+        this.requestByOperationalSystemRepository = new RequestByOperationalSystemRepository(KnexSingleton);
+        this.requestByBrowserRepository = new RequestByBrowserRepository(KnexSingleton);
     }
 
     public async getAllUrlMapper(req: Request, res: Response): Promise<Response> {
@@ -22,20 +34,26 @@ class UrlMapperController {
 
             const [
                 urlMapperItemsDb,
-                urlMapperCount,
+                urlMapperCount
+            ] = await Promise.all([
+                this.urlMapperRepository.getAllUrlMapper(parseInt(page, 10), parseInt(pageSize, 10), longUrlFilter, createdByFilter),
+                this.urlMapperRepository.countUrlMapperItems()
+            ]);
+
+            const urlMapperIds = urlMapperItemsDb.map((urlMapper) => urlMapper.id);
+
+            const [
                 requestInfoByWeek,
                 requestInfoByMonth,
                 requestInfoByOperationalSystem,
                 requestInfoByDevices,
                 requestInfoByBrowser
             ] = await Promise.all([
-                this.urlMapperRepository.getAllUrlMapper(parseInt(page, 10), parseInt(pageSize, 10), longUrlFilter, createdByFilter),
-                this.urlMapperRepository.countUrlMapperItems(),
-                this.requestRepository.getRequestCountsByWeek(),
-                this.requestRepository.getRequestCountsByMonth(),
-                this.requestRepository.getRequestCountsByOperationalSystem(),
-                this.requestRepository.getRequestCountsByDevices(),
-                this.requestRepository.getRequestCountsByBrowser()
+                this.requestByWeekRepository.getRequestByWeekByUrlMapperIds(urlMapperIds),
+                this.requestByMonthRepository.getRequestByMonthByUrlMapperIds(urlMapperIds),
+                this.requestByOperationalSystemRepository.getRequestByOperationalSystemByUrlMapperIds(urlMapperIds),
+                this.requestByDeviceRepository.getRequestByDeviceByUrlMapperIds(urlMapperIds),
+                this.requestByBrowserRepository.getRequestByBrowserByUrlMapperIds(urlMapperIds)
             ]);
 
             const urlMapperItems = ParseUrlMapperItemsResponseHelper.parseUrlMapperItems(
@@ -66,11 +84,11 @@ class UrlMapperController {
                 requestInfoByBrowser
             ] = await Promise.all([
                 this.urlMapperRepository.getUrlMapperItemById(id),
-                this.requestRepository.getRequestCountsByWeekById(id),
-                this.requestRepository.getRequestCountsByMonthById(id),
-                this.requestRepository.getRequestCountsByOperationalSystemById(id),
-                this.requestRepository.getRequestCountsByDevicesById(id),
-                this.requestRepository.getRequestCountsByBrowserById(id)
+                this.requestByWeekRepository.getRequestByWeekByUrlMapperId(id),
+                this.requestByMonthRepository.getRequestByMonthByUrlMapperId(id),
+                this.requestByOperationalSystemRepository.getRequestByOperationalSystemByUrlMapperId(id),
+                this.requestByDeviceRepository.getRequestByDeviceByUrlMapperId(id),
+                this.requestByBrowserRepository.getRequestByBrowserByUrlMapperId(id)
             ]);
 
             if (urlMapperItemDb) {

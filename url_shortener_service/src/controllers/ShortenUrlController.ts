@@ -3,16 +3,29 @@ import { Request, Response } from 'express';
 import KnexSingleton from '../database/knexSingleton';
 import { AuthHelper } from '../helpers/authHelper';
 import { UserAgentHelper } from '../helpers/userAgentHelper';
-import RequestRepository from '../repositories/requestRepository';
+import RequestByBrowserRepository from '../repositories/requestByBrowserRepository';
+import RequestByDeviceRepository from '../repositories/requestByDeviceRepository';
+import RequestByMonthRepository from '../repositories/requestByMonthRepository';
+import RequestByOperationalSystemRepository from '../repositories/requestByOperationalSystemRepository';
+import RequestByWeekRepository from '../repositories/requestByWeekRepository';
 import UrlMapperRepository from '../repositories/urlMapperRepository';
 
 class ShortenUrlController {
     private urlMapperRepository: UrlMapperRepository;
-    private requestRepository: RequestRepository;
+    private requestByWeekRepository: RequestByWeekRepository;
+    private requestByMonthRepository: RequestByMonthRepository;
+    private requestByDeviceRepository: RequestByDeviceRepository;
+    private requestByOperationalSystemRepository: RequestByOperationalSystemRepository;
+    private requestByBrowserRepository: RequestByBrowserRepository;
 
     constructor() {
         this.urlMapperRepository = new UrlMapperRepository(KnexSingleton);
-        this.requestRepository = new RequestRepository(KnexSingleton);
+        this.requestByWeekRepository = new RequestByWeekRepository(KnexSingleton);
+        this.requestByMonthRepository = new RequestByMonthRepository(KnexSingleton);
+        this.requestByDeviceRepository = new RequestByDeviceRepository(KnexSingleton);
+        this.requestByOperationalSystemRepository = new RequestByOperationalSystemRepository(KnexSingleton);
+        this.requestByBrowserRepository = new RequestByBrowserRepository(KnexSingleton);
+
     }
 
     public async redirectToLongUrl(req: Request, res: Response): Promise<Response | void> {
@@ -24,17 +37,14 @@ class ShortenUrlController {
                 const longUrl = urlMapperItem.longUrl.startsWith('http://') || urlMapperItem.longUrl.startsWith('https://') ? urlMapperItem.longUrl : `http://${urlMapperItem.longUrl}`;
                 const { device, os, browser } = UserAgentHelper.parseUserAgent(req);
 
-                await this.urlMapperRepository.incrementCounterUrlMapperItemByHash(hash)
-                await this.requestRepository.createRequestItem(
-                    {
-                        city: "cityMock",
-                        country: "countryMock",
-                        device,
-                        operationalSystem: os,
-                        urlMapper_id: urlMapperItem.id,
-                        browser
-                    }
-                )
+                await Promise.all([
+                    this.urlMapperRepository.incrementCounterUrlMapperItemByHash(hash),
+                    this.requestByWeekRepository.upsertRequestByWeek(urlMapperItem.id),
+                    this.requestByMonthRepository.upsertRequestByMonth(urlMapperItem.id),
+                    this.requestByDeviceRepository.upsertRequestByDevice(urlMapperItem.id, device),
+                    this.requestByOperationalSystemRepository.upsertRequestByOperationalSystem(urlMapperItem.id, os),
+                    this.requestByBrowserRepository.upsertRequestByBrowser(urlMapperItem.id, browser),
+                ]);
 
                 return res.redirect(301, longUrl);
             } else {

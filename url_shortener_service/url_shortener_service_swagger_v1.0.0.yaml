@@ -150,7 +150,7 @@ paths:
                       items:
                         type: object
                         properties:
-                          week_start:
+                          weekStartDate:
                             type: string
                             format: date-time
                             description: 'Start of the week.'
@@ -163,7 +163,7 @@ paths:
                       items:
                         type: object
                         properties:
-                          month_start:
+                          monthStartDate:
                             type: string
                             format: date-time
                             description: 'Start of the month.'
@@ -267,7 +267,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    week_start:
+                    weekStartDate:
                       type: string
                       format: date-time
                       description: 'Start date of the week.'
@@ -280,7 +280,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    month_start:
+                    monthStartDate:
                       type: string
                       format: date-time
                       description: 'Start date of the month.'
