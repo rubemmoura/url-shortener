@@ -34,9 +34,9 @@ Before getting started, ensure that the following software is installed on your 
 4. Once the services are up and running, you can access the following:
 
     - Authentication Service: [http://localhost:3000](http://localhost:3000)
-    - Authentication doc API: [http://localhost:3000](http://localhost:3000/api/swagger)
+    - Authentication doc API: [http://localhost:3000/api/swagger](http://localhost:3000/api/swagger)
     - URL Shortener Service: [http://localhost:3001](http://localhost:3001)
-    - URL Shortener doc API: [http://localhost:3001](http://localhost:3001/api/swagger)
+    - URL Shortener doc API: [http://localhost:3001/api/swagger](http://localhost:3001/api/swagger)
     - Authentication Database (PostgreSQL): Port 5432
     - URL Shortener Database (PostgreSQL): Port 5433
 
