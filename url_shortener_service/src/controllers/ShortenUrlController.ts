@@ -69,7 +69,15 @@ class ShortenUrlController {
                 return res.status(201).json({ message: 'Short URL created', shortUrl, hash: urlMapperItemDb.hash });
             }
 
-            const hash = crypto.createHash('sha256').update(longUrl).digest('hex').substring(0, 8);
+            let hash = crypto.createHash('sha256').update(longUrl).digest('hex').substring(0, 8);
+            let existingItem = await this.urlMapperRepository.getUrlMapperItemByHash(hash);
+
+            // Continue generating new hashes until we find one that doesn't exist
+            while (existingItem) {
+                hash = crypto.createHash('sha256').update(longUrl + Math.random()).digest('hex').substring(0, 8);
+                existingItem = await this.urlMapperRepository.getUrlMapperItemByHash(hash);
+            }
+
             const currentDate = new Date().toISOString();
 
             const urlMapperItem = await this.urlMapperRepository.createUrlMapperItem({
